@@ -37,7 +37,7 @@ export default function RegisterModal() {
     <div className='text-neutral-400 text-center mb-4'>
       <p>
         Already have an account?{' '}
-        <span className='text-white cursor-pointer hover:underline' onClick={onToggle}>
+        <span className='text-black cursor-pointer hover:underline' onClick={onToggle}>
           Sign in
         </span>
       </p>
@@ -139,7 +139,7 @@ function RegisterStep1({
             </FormItem>
           )}
         />
-        <Button label={'Next'} type='submit' secondary fullWidth large disabled={isSubmitting} />
+        <Button label={'Next'} type='submit' secondary fullWidth padding disabled={isSubmitting} />
       </form>
     </Form>
   );

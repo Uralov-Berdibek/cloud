@@ -31,17 +31,17 @@ export default function Auth() {
       <LoginModal />
       <div className='grid grid-cols-1 md:grid-cols-2 gap-10 items-center h-screen'>
         <Image
-          src={'/x.png'}
-          alt='X'
-          width={450}
-          height={450}
+          src={'/cloud.png'}
+          alt='Cloud'
+          width={350}
+          height={100}
           className='justify-self-center hidden md:block'
         />
         <div className='flex flex-col justify-center md:justify-between gap-6 h-full md:h-[70vh]'>
           <div className='block md:hidden'>
-            <Image src={'/x.png'} alt='X' width={50} height={50} />
+            <Image src={'/cloud.png'} alt='Cloud' width={130} height={40} />
           </div>
-          <h1 className='text-6xl font-bold'>Happening now.</h1>
+          <h1 className='text-6xl font-bold sm:text-4xl'>Happening now.</h1>
           <div className='w-full md:w-[60%]'>
             <h2 className='font-bold text-3xl mb-4'>Join today.</h2>
             <div className='flex flex-col space-y-2'>

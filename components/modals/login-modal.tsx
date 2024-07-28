@@ -86,7 +86,7 @@ export default function LoginModal() {
             </FormItem>
           )}
         />
-        <Button label={'Login'} type='submit' secondary fullWidth large disabled={isSubmitting} />
+        <Button label={'Login'} type='submit' secondary fullWidth padding disabled={isSubmitting} />
       </form>
     </Form>
   );
@@ -94,8 +94,8 @@ export default function LoginModal() {
   const footer = (
     <div className='text-neutral-400 text-center mb-4'>
       <p>
-        First time using X?
-        <span className='text-white cursor-pointer hover:underline' onClick={onToggle}>
+        First time using Cloud?
+        <span className='text-black cursor-pointer hover:underline' onClick={onToggle}>
           {' '}
           Create an account
         </span>

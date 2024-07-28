@@ -10,6 +10,7 @@ interface ButtonProps {
   outline?: boolean;
   type?: 'button' | 'submit';
   onClick?: () => void;
+  padding?: boolean;
   classNames?: string;
 }
 
@@ -22,6 +23,7 @@ export default function Button({
   outline,
   secondary,
   type,
+  padding,
   classNames,
 }: ButtonProps) {
   return (
@@ -35,6 +37,7 @@ export default function Button({
         secondary ? 'bg-sky-500 text-white' : 'bg-white text-black',
         large ? 'text-xl px-5 py-3' : 'text-md px-4 py-3',
         outline ? 'bg-transparent border-slate-600 text-sky-500 hover:bg-slate-800/40' : '',
+        padding ? 'text-xl px-5 py-1' : 'text-md px-4 py-3',
         classNames,
       )}
     >
