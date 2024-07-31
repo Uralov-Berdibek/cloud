@@ -11,12 +11,18 @@ import { Alert, AlertDescription, AlertTitle } from '../ui/alert';
 import Button from '../ui/button';
 import { Form, FormControl, FormField, FormItem, FormMessage } from '../ui/form';
 import { Input } from '../ui/input';
-import { signIn } from 'next-auth/react';
 import Modal from '../ui/modal';
+import { InputOTP, InputOTPGroup, InputOTPSlot } from '@/components/ui/input-otp';
 
 export default function RegisterModal() {
   const [step, setStep] = useState(1);
-  const [data, setData] = useState({ name: '', email: '' });
+  const [data, setData] = useState({
+    firstname: '',
+    lastname: '',
+    email: '',
+    password: '',
+    confirmPassword: '',
+  });
 
   const registerModal = useRegisterModal();
   const loginModal = useLoginModal();
@@ -60,7 +66,15 @@ function RegisterStep1({
   setData,
   setStep,
 }: {
-  setData: Dispatch<SetStateAction<{ name: string; email: string }>>;
+  setData: Dispatch<
+    SetStateAction<{
+      firstname: string;
+      lastname: string;
+      email: string;
+      password: string;
+      confirmPassword: string;
+    }>
+  >;
   setStep: Dispatch<SetStateAction<number>>;
 }) {
   const [error, setError] = useState('');
@@ -69,31 +83,34 @@ function RegisterStep1({
     resolver: zodResolver(registerStep1Schema),
     defaultValues: {
       email: '',
-      name: '',
+      firstname: '',
+      lastname: '',
+      password: '',
+      confirmPassword: '',
     },
   });
 
-  async function onSubmit(values: z.infer<typeof registerStep1Schema>) {
-    try {
-      const { data } = await axios.post('/api/auth/register?step=1', values);
-      if (data.success) {
-        setData(values);
-        setStep(2);
-      }
-    } catch (error: any) {
-      if (error.response.data.error) {
-        setError(error.response.data.error);
-      } else {
-        setError('Something went wrong. Please try again later.');
-      }
-    }
-  }
-
   const { isSubmitting } = form.formState;
+
+  const onSubmit = async (formData: z.infer<typeof registerStep1Schema>) => {
+    try {
+      const response = await axios.post('http://localhost:8090/api/v1/auth/register', formData);
+      setData({
+        firstname: formData.firstname,
+        lastname: formData.lastname,
+        email: formData.email,
+        password: formData.password,
+        confirmPassword: formData.confirmPassword,
+      });
+      setStep(2);
+    } catch (error) {
+      setError('Registration failed. Please try again.');
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 px-12'>
+      <form className='space-y-4 px-12' onSubmit={form.handleSubmit(onSubmit)}>
         {error && (
           <Alert variant='destructive'>
             <AlertCircle className='h-4 w-4' />
@@ -101,10 +118,10 @@ function RegisterStep1({
             <AlertDescription>{error}</AlertDescription>
           </Alert>
         )}
-        <div className='flex items-center justify-between gap-1'>
+        <div className='flex items-center gap-2'>
           <FormField
             control={form.control}
-            name='name'
+            name='firstname'
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -116,7 +133,7 @@ function RegisterStep1({
           />
           <FormField
             control={form.control}
-            name='name'
+            name='lastname'
             render={({ field }) => (
               <FormItem>
                 <FormControl>
@@ -139,51 +156,68 @@ function RegisterStep1({
             </FormItem>
           )}
         />
+
+        <div className='flex items-center gap-2'>
+          <FormField
+            control={form.control}
+            name='password'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder='Password' type='password' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+          <FormField
+            control={form.control}
+            name='confirmPassword'
+            render={({ field }) => (
+              <FormItem>
+                <FormControl>
+                  <Input placeholder='Password' type='password' {...field} />
+                </FormControl>
+                <FormMessage />
+              </FormItem>
+            )}
+          />
+        </div>
         <Button label={'Next'} type='submit' secondary fullWidth padding disabled={isSubmitting} />
       </form>
     </Form>
   );
 }
 
-function RegisterStep2({ data }: { data: { name: string; email: string } }) {
+function RegisterStep2({ data }: { data: { firstname: string; lastname: string; email: string } }) {
   const [error, setError] = useState('');
   const registerModal = useRegisterModal();
 
   const form = useForm<z.infer<typeof registerStep2Schema>>({
     resolver: zodResolver(registerStep2Schema),
     defaultValues: {
-      password: '',
-      username: '',
+      email_password: '',
     },
   });
 
-  async function onSubmit(values: z.infer<typeof registerStep2Schema>) {
-    try {
-      const { data: response } = await axios.post('/api/auth/register?step=2', {
-        ...data,
-        ...values,
-      });
-      if (response.success) {
-        signIn('credentials', {
-          email: data.email,
-          password: values.password,
-        });
-        registerModal.onClose();
-      }
-    } catch (error: any) {
-      if (error.response.data.error) {
-        setError(error.response.data.error);
-      } else {
-        setError('Something went wrong. Please try again later.');
-      }
-    }
-  }
-
   const { isSubmitting } = form.formState;
+
+  const onSubmit = async (formData: z.infer<typeof registerStep2Schema>) => {
+    try {
+      await axios.get(`http://localhost:8090/api/v1/auth/activate-account`, {
+        params: { token: formData.email_password },
+      });
+      registerModal.onClose();
+      // Redirect to the main page or handle success as needed
+      window.location.href = '/';
+    } catch (error) {
+      setError('Activation failed. Please try again.');
+    }
+  };
 
   return (
     <Form {...form}>
-      <form onSubmit={form.handleSubmit(onSubmit)} className='space-y-4 px-12'>
+      <form className='space-y-4 px-12' onSubmit={form.handleSubmit(onSubmit)}>
         {error && (
           <Alert variant='destructive'>
             <AlertCircle className='h-4 w-4' />
@@ -193,26 +227,18 @@ function RegisterStep2({ data }: { data: { name: string; email: string } }) {
         )}
         <FormField
           control={form.control}
-          name='username'
+          name='email_password'
           render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input placeholder='Username' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
-          )}
-        />
-        <FormField
-          control={form.control}
-          name='password'
-          render={({ field }) => (
-            <FormItem>
-              <FormControl>
-                <Input placeholder='Password' type='password' {...field} />
-              </FormControl>
-              <FormMessage />
-            </FormItem>
+            <InputOTP maxLength={6}>
+              <InputOTPGroup>
+                <InputOTPSlot index={0} />
+                <InputOTPSlot index={1} />
+                <InputOTPSlot index={2} />
+                <InputOTPSlot index={3} />
+                <InputOTPSlot index={4} />
+                <InputOTPSlot index={5} />
+              </InputOTPGroup>
+            </InputOTP>
           )}
         />
         <Button
@@ -220,7 +246,7 @@ function RegisterStep2({ data }: { data: { name: string; email: string } }) {
           type='submit'
           secondary
           fullWidth
-          large
+          padding
           disabled={isSubmitting}
         />
       </form>

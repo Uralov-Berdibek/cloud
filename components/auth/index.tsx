@@ -11,7 +11,7 @@ import { signIn, useSession } from 'next-auth/react';
 import LoginModal from '../modals/login-modal';
 import RegisterModal from '../modals/register-modal';
 
-export default function Auth() {
+export default function AuthComponent() {
   const registerModal = useRegisterModal();
   const loginModal = useLoginModal();
 

@@ -3,7 +3,6 @@ import useRegisterModal from '@/hooks/useRegisterModal';
 import { zodResolver } from '@hookform/resolvers/zod';
 import axios from 'axios';
 import { AlertCircle } from 'lucide-react';
-// import { signIn } from 'next-auth/react'
 import { useCallback, useState } from 'react';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
@@ -14,12 +13,14 @@ import { signIn } from 'next-auth/react';
 import { loginSchema } from '../../lib/validation';
 import Modal from '../ui/modal';
 import Button from '../ui/button';
+import { useRouter } from 'next/navigation';
 
 export default function LoginModal() {
   const [error, setError] = useState('');
 
   const loginModal = useLoginModal();
   const registerModal = useRegisterModal();
+  const router = useRouter();
 
   const onToggle = useCallback(() => {
     loginModal.onClose();
@@ -36,17 +37,21 @@ export default function LoginModal() {
 
   async function onSubmit(values: z.infer<typeof loginSchema>) {
     try {
-      const { data } = await axios.post('/api/auth/login', values);
-      if (data.success) {
-        signIn('credentials', values);
+      const response = await axios.post('http://localhost:8090/api/v1/auth/authenticate', {
+        email: values.email,
+        password: values.password,
+      });
+      if (response.status === 200) {
+        await signIn('credentials', {
+          email: values.email,
+          password: values.password,
+          redirect: false,
+        });
         loginModal.onClose();
+        router.push('/'); // Navigate to Home page
       }
     } catch (error: any) {
-      if (error.response.data.error) {
-        setError(error.response.data.error);
-      } else {
-        setError('Something went wrong. Please try again later.');
-      }
+      setError(error.response?.data?.message || 'Something went wrong. Please try again.');
     }
   }
 
